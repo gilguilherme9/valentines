@@ -208,6 +208,88 @@
             .letter { padding: 30px; }
             .greeting { font-size: 1.5em; }
         }
+
+        .question-section {
+            margin: 50px 0;
+            padding: 50px 40px;
+            background: linear-gradient(135deg, rgba(139, 21, 56, 0.05) 0%, rgba(166, 29, 77, 0.05) 100%);
+            border-radius: 15px;
+            text-align: center;
+            position: relative;
+        }
+
+        .question-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5em;
+            color: #8b1538;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-shadow: 1px 1px 2px rgba(139, 21, 56, 0.1);
+        }
+
+        .buttons-container {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            min-height: 80px;
+        }
+
+        .btn {
+            font-family: 'Raleway', sans-serif;
+            font-size: 1.3em;
+            font-weight: 600;
+            padding: 18px 50px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .btn-yes {
+            background: linear-gradient(135deg, #8b1538 0%, #a61d4d 100%);
+            color: #faf8f5;
+        }
+
+        .btn-yes:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 30px rgba(139, 21, 56, 0.4);
+        }
+
+        .btn-no {
+            background: white;
+            color: #8b1538;
+            border: 3px solid #8b1538;
+            position: relative;
+            transition: all 0.1s ease;
+        }
+
+        .btn-no:hover {
+            background: #fff5f5;
+        }
+
+        .response-message {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2em;
+            color: #8b1538;
+            margin-top: 30px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            font-weight: 600;
+        }
+
+        .response-message.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .question-text { font-size: 1.8em; }
+            .btn { font-size: 1.1em; padding: 15px 40px; }
+        }
     </style>
 </head>
 <body>
@@ -248,6 +330,15 @@ Happy Valentine's Day, my love. Here's to us and to many more beautiful moments 
                 <p class="closing-text">Yours eternally,</p>
                 <p class="signature">[Your Name]</p>
             </div>
+
+            <div class="question-section">
+                <p class="question-text">Would you be my forever valentine?</p>
+                <div class="buttons-container">
+                    <button class="btn btn-yes" onclick="handleYes()">Yes</button>
+                    <button class="btn btn-no" id="noBtn">No</button>
+                </div>
+                <p class="response-message" id="responseMessage"></p>
+            </div>
         </div>
         
         <div class="footer">
@@ -255,5 +346,76 @@ Happy Valentine's Day, my love. Here's to us and to many more beautiful moments 
             <p class="footer-message">With All My Heart</p>
         </div>
     </div>
+
+    <script>
+        const noBtn = document.getElementById('noBtn');
+        const responseMessage = document.getElementById('responseMessage');
+
+        // Function to handle Yes button click
+        function handleYes() {
+            responseMessage.innerHTML = '🎉 Yay! I knew you\'d say yes! ❤️';
+            responseMessage.classList.add('show');
+            noBtn.style.display = 'none';
+        }
+
+        // Function to move No button to random position
+        function moveButton() {
+            const yesBtn = document.querySelector('.btn-yes');
+            const yesBtnRect = yesBtn.getBoundingClientRect();
+            const noBtnRect = noBtn.getBoundingClientRect();
+
+            // Define a larger movement area around the viewport
+            const margin = 50;
+            const moveAreaWidth = window.innerWidth - noBtnRect.width - (margin * 2);
+            const moveAreaHeight = window.innerHeight - noBtnRect.height - (margin * 2);
+
+            let newX, newY, attempts = 0;
+            const maxAttempts = 100;
+
+            // Try to find a position that doesn't overlap with Yes button
+            do {
+                newX = margin + (Math.random() * moveAreaWidth);
+                newY = margin + (Math.random() * moveAreaHeight);
+                attempts++;
+
+                // Check if this position overlaps with Yes button (with extra padding)
+                const padding = 30;
+                const wouldOverlap = !(
+                    newX > yesBtnRect.right + padding ||
+                    newX + noBtnRect.width < yesBtnRect.left - padding ||
+                    newY > yesBtnRect.bottom + padding ||
+                    newY + noBtnRect.height < yesBtnRect.top - padding
+                );
+
+                if (!wouldOverlap) {
+                    break;
+                }
+            } while (attempts < maxAttempts);
+
+            // If we still couldn't find a good position after max attempts,
+            // place it far away from the Yes button
+            if (attempts >= maxAttempts) {
+                if (yesBtnRect.left > window.innerWidth / 2) {
+                    newX = margin;
+                } else {
+                    newX = window.innerWidth - noBtnRect.width - margin;
+                }
+                newY = margin;
+            }
+
+            noBtn.style.left = `${newX}px`;
+            noBtn.style.top = `${newY}px`;
+            noBtn.style.position = 'fixed';
+        }
+
+        // Add mouseenter event to move button away
+        noBtn.addEventListener('mouseenter', moveButton);
+
+        // Also move on touch devices
+        noBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            moveButton();
+        });
+    </script>
 </body>
 </html>
